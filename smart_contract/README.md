@@ -1,17 +1,14 @@
-# compile、test
+# compile
 
 ```shell
 yarn
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
+yarn build
 ```
 
 # deploy
  <!-- get the Transactions address -->
 ```shell
-npx hardhat run scripts/deploy.js --network localhost
+yarn deploy
 ```
 
 .
