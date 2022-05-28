@@ -1,0 +1,21 @@
+{
+  "name": "smart_contract",
+  "version": "0.0.1",
+  "description": "smart_contract",
+  "main": "index.js",
+  "scripts": {
+    "deploy":"npx hardhat run scripts/deploy.js --network localhost",
+    "build":"npx hardhat accounts && npx hardhat compile && npx hardhat clean"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.2",
+    "hardhat": "^2.8.0"
+  }
+}
