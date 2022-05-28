@@ -1,6 +1,7 @@
 # compile、test
 
 ```shell
+yarn
 npx hardhat accounts
 npx hardhat compile
 npx hardhat clean
