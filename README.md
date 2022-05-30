@@ -1,7 +1,6 @@
 # Project
 
-Build and Deploy a Modern Web 3.0 Blockchain App | Solidity, Smart Contracts, Crypto
-
+Using Web 3.0 methodologies, Solidity and Metamask you'll learn how to build a your first real Web 3.0 Application - from start to finish.
 
 # How to start
 ## Start Contract
