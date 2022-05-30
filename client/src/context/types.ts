@@ -1,5 +1,6 @@
 export interface TransactionContextType {
   transactionCount: string;
+  currentAccountBalance: string;
   connectWallet: () => void;
   transactions: TransactionType[];
   currentAccount: string;

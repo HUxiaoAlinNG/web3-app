@@ -18,8 +18,15 @@ const Input = ({ placeholder, name, type, handleChange }) => (
 );
 
 const Welcome: React.FC = () => {
-  const { currentAccount, connectWallet, handleChange, sendTransaction, formData, isLoading } =
-    useContext(TransactionContext);
+  const {
+    currentAccount,
+    currentAccountBalance,
+    connectWallet,
+    handleChange,
+    sendTransaction,
+    formData,
+    isLoading,
+  } = useContext(TransactionContext);
   const handleSubmit = (e) => {
     const { addressTo, amount, keyword, message } = formData;
 
@@ -32,7 +39,6 @@ const Welcome: React.FC = () => {
 
     sendTransaction();
   };
-
   return (
     <div className="flex w-full justify-center items-center">
       <div className="flex mf:flex-row flex-col items-start justify-between md:p-20 py-12 px-4">
@@ -65,8 +71,15 @@ const Welcome: React.FC = () => {
                 <span className="text-white">Your Account</span>
               </div>
               <div>
+                {currentAccountBalance && (
+                  <p className="text-white font-light text-sm">
+                    Balance: {currentAccountBalance} ETH
+                  </p>
+                )}
                 {currentAccount && (
-                  <p className="text-white font-light text-sm">{shortenAddress(currentAccount)}</p>
+                  <p className="text-white font-light text-sm">
+                    Account: {shortenAddress(currentAccount)}
+                  </p>
                 )}
                 <p className="text-white font-semibold text-lg mt-1">Ethereum</p>
               </div>

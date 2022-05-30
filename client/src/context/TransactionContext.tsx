@@ -46,6 +46,7 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
     localStorage.getItem('transactionCount'),
   );
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
+  const [currentAccountBalance, setCurrentAccountBalance] = useState('');
 
   const handleChange = (e, name) => {
     setFormData((prevState) => ({ ...prevState, [name]: e.target.value }));
@@ -64,7 +65,7 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
         timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
         message: transaction.message,
         keyword: transaction.keyword,
-        amount: parseInt(transaction.amount._hex, 10) / 10 ** 18,
+        amount: ethers.utils.formatEther(transaction.amount),
       }));
 
       console.log('=====structuredTransactions=====', structuredTransactions);
@@ -95,8 +96,10 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
       // get account address
       let accounts = await ethereum.request({ method: 'eth_accounts' });
       if (accounts.length) {
-        setCurrentAccount(accounts[0]);
-        await getAllTransactions(accounts[0]);
+        const account = accounts[0];
+        setCurrentAccount(account);
+        await getBalance(account);
+        await getAllTransactions(account);
         return;
       }
       alert('Click "Connect Wallet" to connect MetaMask!');
@@ -126,11 +129,29 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
         method: 'eth_requestAccounts',
       });
 
-      setCurrentAccount(accounts[0]);
-      return accounts[0];
+      const account = accounts[0];
+      setCurrentAccount(account);
+      await getBalance(account);
+      await getAllTransactions(account);
+      return account;
     } catch (error) {
       console.log('=====connectWallet error=====', error);
       alert(`connect wallet error:${error.message}`);
+    }
+  };
+
+  const getBalance = async (account: string): Promise<string> => {
+    try {
+      const res = await ethereum.request({
+        method: 'eth_getBalance',
+        params: [account, 'latest'],
+      });
+
+      setCurrentAccountBalance(ethers.utils.formatEther(res));
+      return res;
+    } catch (error) {
+      console.log('=====getBalance error=====', error);
+      alert(`getBalance error:${error.message}`);
     }
   };
 
@@ -190,6 +211,7 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
     <TransactionContext.Provider
       value={{
         transactionCount,
+        currentAccountBalance,
         connectWallet,
         transactions,
         currentAccount,
