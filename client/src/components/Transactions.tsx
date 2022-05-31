@@ -19,10 +19,10 @@ const TransactionsCard: React.FC<TransactionsCardType> = ({
   return (
     <div
       className="bg-[#181918] m-4 flex flex-1
-      2xl:min-w-[450px]
-      2xl:max-w-[500px]
-      sm:min-w-[270px]
-      sm:max-w-[300px]
+      2xl:min-w-[250px]
+      2xl:max-w-[200px]
+      sm:min-w-[70px]
+      sm:max-w-[100px]
       min-w-full
       flex-col p-3 rounded-md hover:shadow-2xl"
     >
@@ -43,17 +43,12 @@ const TransactionsCard: React.FC<TransactionsCardType> = ({
             <p className="text-white text-base">To: {shortenAddress(addressTo)}</p>
           </a>
           <p className="text-white text-base">Amount: {amount} ETH</p>
-          {message && (
-            <>
-              <br />
-              <p className="text-white text-base">Message: {message}</p>
-            </>
-          )}
+          {message && <p className="text-white text-base">Message: {message}</p>}
         </div>
         <img
           src={gifUrl}
           alt="nature"
-          className="w-full h-64 2xl:h-96 rounded-md shadow-lg object-cover"
+          className="w-full h-64 2xl:h-48 rounded-md shadow-lg object-cover"
         />
         <div className="bg-black p-3 px-5 w-max rounded-3xl -mt-5 shadow-2xl">
           <p className="text-[#37c7da] font-bold">{timestamp}</p>

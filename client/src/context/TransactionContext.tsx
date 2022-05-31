@@ -105,7 +105,7 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
         return;
       }
     } catch (error) {
-      console.error(`=====checkIfWalletIsConnect error=====:${error.message}`);
+      console.error('=====checkIfWalletIsConnect error=====,', error);
       alert('Click "Connect Wallet" to connect MetaMask!');
     }
   };
@@ -177,8 +177,6 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
       setTransactionCount(transactionsCount.toNumber());
       window.location.reload();
     } catch (error) {
-      console.log('====sendTransaction error====', error);
-
       alert(`sendTransaction error:${error.message}`);
     }
   };
