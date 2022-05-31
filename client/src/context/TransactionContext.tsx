@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { contractABI, contractAddress } from '../utils/constants';
 import { TransactionContextType, TransactionType } from './types';
 import detectEthereumProvider from '@metamask/detect-provider';
+import { createProvider, getProvider, getSigner } from './ethersUtils';
 interface IProps {
   children: React.ReactNode;
 }
@@ -15,7 +16,7 @@ let provider: any;
 
 const createEthereumContract = async (address?: string) => {
   try {
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    const provider = getProvider(ethereum);
     if (address) {
       const exist = await provider.getCode(address);
       if (!exist) {
@@ -68,8 +69,6 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
         amount: ethers.utils.formatEther(transaction.amount),
       }));
 
-      console.log('=====structuredTransactions=====', structuredTransactions);
-
       setTransactions(structuredTransactions || []);
     } catch (error) {
       console.log('=====getAllTransactions error=====', error);
@@ -77,7 +76,8 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
   };
 
   const reloadWhenChainIdChanged = () => {
-    ethereum.on('chainChanged', (chainId) => window.location.reload());
+    const provider = getProvider(ethereum);
+    provider.on('chainChanged', (chainId) => window.location.reload());
   };
 
   const checkIfMetaMaskInstall = async () => {
@@ -88,38 +88,36 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
     if (provider !== ethereum) {
       alert('Do you have multiple wallets installed?');
     }
+    createProvider(ethereum);
     reloadWhenChainIdChanged();
   };
 
   const checkIfWalletIsConnect = async () => {
     try {
       // get account address
-      let accounts = await ethereum.request({ method: 'eth_accounts' });
-      if (accounts.length) {
-        const account = accounts[0];
-        setCurrentAccount(account);
-        await getBalance(account);
-        await getAllTransactions(account);
+      const signer = getSigner(ethereum);
+      const address = await signer.getAddress();
+      if (address) {
+        setCurrentAccount(address);
+        await getBalance(address);
+        await getAllTransactions(address);
+        await getTransactionCount();
         return;
       }
-      alert('Click "Connect Wallet" to connect MetaMask!');
     } catch (error) {
-      console.log('=====checkIfWalletIsConnect error=====', error);
+      console.error(`=====checkIfWalletIsConnect error=====:${error.message}`);
+      alert('Click "Connect Wallet" to connect MetaMask!');
     }
   };
 
-  const checkIfTransactionsExists = async () => {
+  const getTransactionCount = async () => {
     const transactionsContract = await createEthereumContract();
     try {
       // call Transactions.sol getTransactionCount
       const currentTransactionCount = await transactionsContract.getTransactionCount();
-
-      console.log('=====transactionCount=====', currentTransactionCount.toNumber());
       window.localStorage.setItem('transactionCount', currentTransactionCount);
     } catch (error) {
-      console.log('=====checkIfTransactionsExists error=====', error);
-
-      throw new Error(`checkIfTransactionsExists error:${error.message}`);
+      console.error('=====getTransactionCount error=====', error);
     }
   };
 
@@ -135,23 +133,18 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
       await getAllTransactions(account);
       return account;
     } catch (error) {
-      console.log('=====connectWallet error=====', error);
       alert(`connect wallet error:${error.message}`);
     }
   };
 
-  const getBalance = async (account: string): Promise<string> => {
+  const getBalance = async (account: string): Promise<ethers.BigNumber> => {
     try {
-      const res = await ethereum.request({
-        method: 'eth_getBalance',
-        params: [account, 'latest'],
-      });
-
-      setCurrentAccountBalance(ethers.utils.formatEther(res));
-      return res;
+      const provider = getProvider(ethereum);
+      const balance = await provider.getBalance(account);
+      setCurrentAccountBalance(ethers.utils.formatEther(balance));
+      return balance;
     } catch (error) {
-      console.log('=====getBalance error=====', error);
-      alert(`getBalance error:${error.message}`);
+      console.error('=====getBalance error=====', error);
     }
   };
 
@@ -160,16 +153,12 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
       const { addressTo, amount, keyword, message } = formData;
       const transactionsContract = await createEthereumContract();
       const parsedAmount = ethers.utils.parseEther(amount);
-      await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [
-          {
-            from: currentAccount,
-            to: addressTo,
-            gas: '0x5208',
-            value: parsedAmount._hex,
-          },
-        ],
+      const signer = getSigner(ethereum);
+      await signer.sendTransaction({
+        from: currentAccount,
+        to: addressTo,
+        gasPrice: '0x5208',
+        value: parsedAmount._hex,
       });
       // call Transactions.sol addToBlockchain
       const transactionHash = await transactionsContract.addToBlockchain(
@@ -180,9 +169,7 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
       );
 
       setIsLoading(true);
-      console.log(`Loading - ${transactionHash.hash}`);
       await transactionHash.wait();
-      console.log(`Success - ${transactionHash.hash}`);
       setIsLoading(false);
 
       const transactionsCount = await transactionsContract.getTransactionCount();
@@ -200,7 +187,6 @@ const TransactionsProvider: React.FC<IProps> = (props: IProps) => {
   const init = async () => {
     await checkIfMetaMaskInstall();
     await checkIfWalletIsConnect();
-    await checkIfTransactionsExists();
   };
 
   useEffect(() => {

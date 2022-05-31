@@ -4,7 +4,7 @@ export interface TransactionsCardType {
   timestamp: string;
   message: string;
   keyword: string;
-  amount: string;
+  amount: number;
 }
 
 export interface ServiceCardType {
