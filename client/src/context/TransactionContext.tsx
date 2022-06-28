@@ -19,7 +19,7 @@ const createEthereumContract = async (address?: string) => {
     const provider = getProvider(ethereum);
     if (address) {
       const exist = await provider.getCode(address);
-      if (!exist) {
+      if (exist === '0x') {
         throw new Error('The code does not exist on-chain');
       }
     }
